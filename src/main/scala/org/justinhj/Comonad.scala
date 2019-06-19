@@ -7,6 +7,7 @@ import cats._
 import cats.data._
 import cats.implicits._
 import cats.instances._
+//import cats.syntax.show._
 
 object Comonad {
 
@@ -21,24 +22,33 @@ object Comonad {
 
   case class FocusedGrid[A](focus: Tuple2[Int,Int], grid : Vector[Vector[A]])
 
-  // Get the sum of the focus and the values around it
-  def localSum(fg : FocusedGrid[Int]) : Int = {
-    def getAt(point : Tuple2[Int,Int]) : Int = {
-      val what = fg.grid.get(point._1).flatMap(row => row.get(point._2))
-      what.getOrElse(0)
-    }
-    
-    getAt((fg.focus._1 - 1, fg.focus._2 - 1)) +
-    getAt((fg.focus._1, fg.focus._2 - 1)) +
-    getAt((fg.focus._1 + 1, fg.focus._2 - 1)) +
-    getAt((fg.focus._1 - 1, fg.focus._2)) +
-    getAt((fg.focus._1, fg.focus._2)) +
-    getAt((fg.focus._1 + 1, fg.focus._2)) +
-    getAt((fg.focus._1 - 1, fg.focus._2 + 1)) +
-    getAt((fg.focus._1, fg.focus._2 + 1)) +
-    getAt((fg.focus._1 + 1, fg.focus._2 + 1))
+  def getAt(fg : FocusedGrid[Int], point : Tuple2[Int,Int]) : Int = {
+    fg.grid.get(point._1).flatMap(row => row.get(point._2)).getOrElse(0)
+  }
+
+  // Get the sum of the values around the focus
+  def localSum(fg : FocusedGrid[Int]) : Int = {  
+    getAt(fg, (fg.focus._1 - 1, fg.focus._2 - 1)) +
+    getAt(fg, (fg.focus._1, fg.focus._2 - 1)) +
+    getAt(fg, (fg.focus._1 + 1, fg.focus._2 - 1)) +
+    getAt(fg, (fg.focus._1 - 1, fg.focus._2)) +
+    //getAt((fg.focus._1, fg.focus._2)) +
+    getAt(fg, (fg.focus._1 + 1, fg.focus._2)) +
+    getAt(fg, (fg.focus._1 - 1, fg.focus._2 + 1)) +
+    getAt(fg, (fg.focus._1, fg.focus._2 + 1)) +
+    getAt(fg, (fg.focus._1 + 1, fg.focus._2 + 1))
   }
   
+  implicit def focusedGridShow[A : Show] = new Show[FocusedGrid[A]] {
+    def show(fg: FocusedGrid[A]): String = {
+      val wai = fg.grid.map{
+        row => 
+          row.iterator.map(_.show).mkString(" ")
+      }
+      wai.mkString("\n")
+    }
+  }
+
   implicit val focusedGridComonad = new Comonad[FocusedGrid] {
 
     override def map[A, B](fa: FocusedGrid[A])(f: A => B) : FocusedGrid[B] = {
@@ -69,22 +79,36 @@ object Comonad {
 
   }
 
-  val g1 = Vector[Int](1,2,3)
-  val g2 = Vector[Int](4,5,6)
-  val g3 = Vector[Int](7,8,9)
+  val blinker = Vector(
+    Vector[Int](0,0,0,0,0),
+    Vector[Int](0,0,0,0,0),
+    Vector[Int](0,1,1,1,0),
+    Vector[Int](0,0,0,0,0),
+    Vector[Int](0,0,0,0,0))
 
-  val fg1 = FocusedGrid((1,1), Vector(g1,g2,g3))
+  val b1 = FocusedGrid((0,0), blinker)
+
+  def conwayStep(fg: FocusedGrid[Int]) : Int = {
+    val liveNeighbours = localSum(fg)
+    val live = getAt(fg, fg.focus)
+
+    if(live == 1) {
+      if(liveNeighbours >= 2 && liveNeighbours <=3) 1 else 0
+    }
+    else {
+      if(liveNeighbours == 3) 1 else 0 
+    }
+  }
 
   //@ fg1.coflatMap(localSum(_)) 
   // LOL!
   //res6: FocusedGrid[Int] = FocusedGrid((1, 1), Vector(Vector(12, 21, 16), Vector(27, 45, 33), Vector(24, 39, 28)))
 
   def main(args : Array[String]) : Unit = {
-    println("Hello, mate!")
 
+    println(b1.show)
 
-    // functor 
-    println(fg1.map(f => f + 1))
+    println(b1.coflatMap(conwayStep).show)
   }
 
 }
