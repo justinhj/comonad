@@ -57,6 +57,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
   // Cats
   "org.typelevel" %% "cats-core" % CatsVersion,
+  "org.typelevel" %% "cats-laws" % CatsVersion,
   "org.typelevel" %% "cats-effect" % CatsEffectVersion,
   // fs2
   "co.fs2" %% "fs2-core" % FS2Version,
@@ -64,9 +65,6 @@ libraryDependencies ++= Seq(
   "io.monix" %% "monix" % MonixVersion,
   // shapeless
   "com.chuusai" %% "shapeless" % ShapelessVersion,
-  // scalaz
-  "org.scalaz" %% "scalaz-core" % ScalaZVersion,
-  "org.scalaz" %% "scalaz-zio" % ZIOVersion,
   // type classes
   "com.github.mpilquist" %% "simulacrum" % "0.12.0",
   // li haoyi ammonite repl embed
