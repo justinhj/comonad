@@ -41,11 +41,9 @@ object Comonad {
   
   implicit def focusedGridShow[A : Show] = new Show[FocusedGrid[A]] {
     def show(fg: FocusedGrid[A]): String = {
-      val wai = fg.grid.map{
-        row => 
-          row.iterator.map(_.show).mkString(" ")
-      }
-      wai.mkString("\n")
+      fg.grid.map{
+        row => row.iterator.map(_.show).mkString("")
+      }.mkString("\n")
     }
   }
 
@@ -86,7 +84,20 @@ object Comonad {
     Vector[Int](0,0,0,0,0),
     Vector[Int](0,0,0,0,0))
 
-  val b1 = FocusedGrid((0,0), blinker)
+  val glider = Vector(
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,1,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,1,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,1,1,1,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0))
 
   def conwayStep(fg: FocusedGrid[Int]) : Int = {
     val liveNeighbours = localSum(fg)
@@ -100,15 +111,38 @@ object Comonad {
     }
   }
 
+  // Convert the digits of the FocusedGrid to more pleasing characters
+  def prettify(i : Int) : Char = {
+    i match {
+      case 1 => 0x2593.toChar
+      case 0 => 0x2591.toChar
+    }
+  }
+
   //@ fg1.coflatMap(localSum(_)) 
   // LOL!
   //res6: FocusedGrid[Int] = FocusedGrid((1, 1), Vector(Vector(12, 21, 16), Vector(27, 45, 33), Vector(24, 39, 28)))
 
+  def ansiMoveUp(n : Int) = s"\u001b[${n}A"
+
+  def animate(start: FocusedGrid[Int], steps: Int) : Unit = {
+
+    println(start.map(a => prettify(a)).show)
+
+    Thread.sleep(100)
+    
+    if(steps > 0) {
+      print(ansiMoveUp(start.grid.size))
+      animate(start.coflatMap(conwayStep), steps - 1)
+    }
+  }
+
   def main(args : Array[String]) : Unit = {
 
-    println(b1.show)
+    //val b = FocusedGrid((0,0), blinker)
+    val b = FocusedGrid((0,0), glider)
 
-    println(b1.coflatMap(conwayStep).show)
+    animate(b, 30)
   }
 
 }
