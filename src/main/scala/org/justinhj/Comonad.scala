@@ -23,7 +23,24 @@ object Comonad {
   case class FocusedGrid[A](focus: Tuple2[Int,Int], grid : Vector[Vector[A]])
 
   def getAt(fg : FocusedGrid[Int], point : Tuple2[Int,Int]) : Int = {
-    fg.grid.get(point._1).flatMap(row => row.get(point._2)).getOrElse(0)
+    val row = if(point._1 >= fg.grid.size)
+                point._1 - fg.grid.size
+              else {
+                if(point._1 < 0)
+                  point._1 + fg.grid.size
+                else
+                  point._1
+              }
+    val col = if(point._2 >= fg.grid(0).size)
+                point._2 - fg.grid(0).size
+              else {
+                if(point._2 < 0)
+                  point._2 + fg.grid(0).size
+                else
+                  point._2
+              }
+    val wrapped = (row, col)
+    fg.grid.get(wrapped._1).flatMap(row => row.get(wrapped._2)).getOrElse(0)
   }
 
   // Get the sum of the values around the focus
@@ -78,26 +95,62 @@ object Comonad {
   }
 
   val blinker = Vector(
+    Vector[Int](0,1,1,1,0),
+    Vector[Int](0,0,0,0,0),
     Vector[Int](0,0,0,0,0),
     Vector[Int](0,0,0,0,0),
     Vector[Int](0,1,1,1,0),
     Vector[Int](0,0,0,0,0),
+    Vector[Int](0,0,0,0,0),
+    Vector[Int](0,0,0,0,0),
+    Vector[Int](0,1,1,1,0),
+    Vector[Int](0,0,0,0,0),
+    Vector[Int](0,0,0,0,0),
     Vector[Int](0,0,0,0,0))
 
   val glider = Vector(
-      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,1,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,1,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,1,1,1,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0))
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0))
+
+    val dieHard = Vector(
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+        Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0))
 
   def conwayStep(fg: FocusedGrid[Int]) : Int = {
     val liveNeighbours = localSum(fg)
@@ -129,7 +182,7 @@ object Comonad {
 
     println(start.map(a => prettify(a)).show)
 
-    Thread.sleep(100)
+    Thread.sleep(120)
     
     if(steps > 0) {
       print(ansiMoveUp(start.grid.size))
@@ -140,9 +193,10 @@ object Comonad {
   def main(args : Array[String]) : Unit = {
 
     //val b = FocusedGrid((0,0), blinker)
-    val b = FocusedGrid((0,0), glider)
+    //val b = FocusedGrid((0,0), glider)
+    val b = FocusedGrid((0,0), dieHard)
 
-    animate(b, 30)
+    animate(b, 135)
   }
 
 }
