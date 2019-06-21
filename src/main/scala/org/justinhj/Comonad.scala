@@ -8,11 +8,8 @@ import cats.implicits._
 
 object Comonad {
 
-  // A 2d array like Array[Array[A]] and a focus point 0,0
-  // extract gives the focus point
-  // duplicate gives all the foci
-  // so we can use coflatmap to get the sum of the neighbours etc
-
+  // FocusedGrid is a 2d array like Array[Array[A]] and a focus point that is a row
+  // and column index into the grid
   case class FocusedGrid[A](focus: Tuple2[Int,Int], grid : Vector[Vector[A]])
 
   def getAt(fg : FocusedGrid[Int], point : Tuple2[Int,Int]) : Int = {
