@@ -1,43 +1,28 @@
 package org.justinhj
 
-// Created by https://github.com/justinhj/fp-starter-pack.g8
-// Comonad example
+// This project was created by https://github.com/justinhj/fp-starter-pack.g8
+// Comonad example implementation of Conway's game of life
 
 import cats._
 import cats.implicits._
 
 object Comonad {
 
-  // FocusedGrid is a 2d array like Array[Array[A]] and a focus point that is a row
+  // FocusedGrid is a 2d array like Vector[Vector[A]] and a focus point that is a row
   // and column index into the grid
   case class FocusedGrid[A](focus: Tuple2[Int,Int], grid : Vector[Vector[A]])
 
   def getAt(fg : FocusedGrid[Int], point : Tuple2[Int,Int]) : Int = {
-    val row = if(point._1 >= fg.grid.size)
-                point._1 - fg.grid.size
-              else {
-                if(point._1 < 0)
-                  point._1 + fg.grid.size
-                else
-                  point._1
-              }
-    val col = if(point._2 >= fg.grid(0).size)
-                point._2 - fg.grid(0).size
-              else {
-                if(point._2 < 0)
-                  point._2 + fg.grid(0).size
-                else
-                  point._2
-              }
+    val row = if(point._1 >= 0) point._1 % fg.grid.size else ((point._1 % fg.grid.size) + fg.grid.size)
+    val col = if(point._2 >= 0) point._2 % fg.grid(0).size else ((point._2 % fg.grid(0).size) + fg.grid(0).size)
     val wrapped = (row, col)
     fg.grid.get(wrapped._1).flatMap(row => row.get(wrapped._2)).getOrElse(0)
   }
 
   // Get the sum of the values around the focus
   def localSum(fg : FocusedGrid[Int]) : Int = {  
-
     val points = List(-1,0,1)
-    (points,points).mapN{case (a : Tuple2[Int,Int]) => identity(a)}.filter{
+    Applicative[List].map2(points,points){case (a : Tuple2[Int,Int]) => identity(a)}.filter{
       case (0,0) => false
       case _ => true
     }.map(coord => getAt(fg, coord |+| fg.focus)).sum
@@ -96,9 +81,9 @@ object Comonad {
       Vector[Int](0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
       Vector[Int](0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0),
       Vector[Int](0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-      Vector[Int](0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0),
+      Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0),
+      Vector[Int](0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,0,0),
       Vector[Int](0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0),
       Vector[Int](0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0),
       Vector[Int](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
@@ -158,10 +143,9 @@ object Comonad {
   def ansiMoveUp(n : Int) = s"\u001b[${n}A"
 
   def animate(start: FocusedGrid[Int], steps: Int) : Unit = {
-
     println(start.map(a => prettify(a)).show)
 
-    Thread.sleep(120)
+    Thread.sleep(80)
     
     if(steps > 0) {
       print(ansiMoveUp(start.grid.size))
@@ -170,10 +154,14 @@ object Comonad {
   }
 
   def main(args : Array[String]) : Unit = {
-
+    // Simple blinker example
     //val b = FocusedGrid((0,0), blinker)
-    //val b = FocusedGrid((0,0), glider)
-    val b = FocusedGrid((0,0), dieHard)
+
+    // Three gliders flying together
+    val b = FocusedGrid((0,0), glider)
+
+    // Diehard takes 130 steps to stabilize
+    //val b = FocusedGrid((0,0), dieHard)
 
     animate(b, 135)
   }
