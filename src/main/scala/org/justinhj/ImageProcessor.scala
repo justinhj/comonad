@@ -8,6 +8,7 @@ import cats.implicits._
 import java.io.File
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
+import cats.data.Cokleisli
 
 object ImageProcessor {
 
@@ -19,8 +20,8 @@ object ImageProcessor {
   }
 
   // Get the sum of the values around the focus
-  def localSum(fg : FocusedGrid[(Int,Int,Int)], default: (Int,Int,Int)) : (Int,Int,Int) = {  
-    val points = List(-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10)
+  def localSum(fg : FocusedGrid[(Int,Int,Int)], default: (Int,Int,Int), width: Int) : (Int,Int,Int) = {  
+    val points = (-width/2 to width/2).toList
     Applicative[List].map2(points,points){case (r,c) => getAt(fg, (r,c) |+| fg.focus, default)}.combineAll
   }
 
@@ -77,30 +78,42 @@ def processImage(img: BufferedImage, f: FocusedGrid[(Int,Int,Int)] => (Int,Int,I
       out.setRGB(x,y,rgb)
     }
 
-    val fg = imageToFocusedGrid(out)
-    val processed = fg.coflatMap(f)
-    focusedGridToImage(processed, out)
+  val fg = imageToFocusedGrid(out)
+  val processed = fg.coflatMap(f)
+  focusedGridToImage(processed, out)
 
-    println(fg.focus)
-    println(fg.grid.size)
-
-    
   out
 }
   def main(args : Array[String]) : Unit = {
 
-    val photo1 = ImageIO.read(new File("./images/girl.png"))
+    val photo1 = ImageIO.read(new File("./images/noisygirl.png"))
 
     println(photo1.getHeight())
         
-    def boxFilter(fg: FocusedGrid[(Int,Int,Int)]) : (Int,Int,Int) = {
-      val sum = localSum(fg, (255,255,255))
-      ((sum._1 / 441.0).toInt, (sum._2 / 441.0).toInt, (sum._3 / 441.0).toInt)
+    def boxFilter(width: Int) : FocusedGrid[(Int,Int,Int)] => (Int,Int,Int) = {
+      fg => 
+        val widthSqr = width * width
+        val sum = localSum(fg, (255,255,255), width)
+        ((sum._1 / widthSqr).toInt, (sum._2 / widthSqr).toInt, (sum._3 / widthSqr).toInt)
     }
 
-    val photo2 = processImage(photo1, boxFilter) 
+    def mirrorHorizontal(fg: FocusedGrid[(Int,Int,Int)]) : (Int,Int,Int) = {
+      val mirrorX = (fg.grid(0).size - 1) - fg.focus._2
+      fg.grid(fg.focus._1)(mirrorX)
+    }
 
-    ImageIO.write(photo2, "png", new File("./images/girlsmoothed.png"))
+    // val bf = Cokleisli[FocusedGrid, (Int,Int,Int), (Int,Int,Int)](fg => boxFilter(fg))
+    // val mh = Cokleisli[FocusedGrid, (Int,Int,Int), (Int,Int,Int)](fg => mirrorHorizontal(fg))
+
+    // val composed = bf.andThen(mh)
+
+    // val photo2 = processImage(photo1, composed.run) 
+
+    //val photo2 = processImage(photo1, mirrorHorizontal) 
+
+    val photo2 = processImage(photo1, boxFilter(9))
+
+    ImageIO.write(photo2, "png", new File("./images/noisygirlsmoothed.png"))
 
   }
 
