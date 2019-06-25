@@ -27,7 +27,7 @@ object FocusedGrid {
 
     override def coflatten[A](fa: FocusedGrid[A]): FocusedGrid[FocusedGrid[A]] = {
       val grid = fa.grid.mapWithIndex((row, ri) => row.mapWithIndex((col, ci) => FocusedGrid((ri, ci), fa.grid)))
-      FocusedGrid((0, 0), grid)
+      FocusedGrid(fa.focus, grid)
     }
 
     // Gives us all of the possible foci for this grid
