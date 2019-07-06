@@ -2,7 +2,7 @@ package org.justinhj
 
 // Comonad example to do some image processing
 
-import cats._
+import cats._, data._
 import cats.implicits._
 import java.io.File
 import javax.imageio.ImageIO
@@ -73,15 +73,52 @@ object ImageProcessor {
     fg.grid(fg.focus._1)(mirrorX)
   }
 
+  // def identity(fg: FocusedGrid[(Int, Int, Int)]): (Int, Int, Int) = {
+  //   fg.extract
+  // }
+  def identity[F[_] : Comonad, A](f: F[A]): A = f.extract
+  
+  def compose[A,B,C,D](fg : FocusedGrid[A], f1 : FocusedGrid[A] => B, f2 : FocusedGrid[A] => C)(cf : (B,C) => D) : D = {
+    val v1 = f1(fg)
+    val v2 = f2(fg)
+    cf(v1, v2)
+  }
+
+  def blend(a : (Int, Int, Int), b: (Int, Int, Int)) : (Int, Int, Int) = {
+    ((a._1 + b._1)/2,
+      (a._2 + b._2)/2,
+      (a._3 + b._3)/2)  
+  }
+
+  def blendTuple(a : ((Int, Int, Int), (Int, Int, Int))) : (Int, Int, Int) = {
+    ((a._1._1 + a._2._1)/2,
+      (a._1._2 + a._2._2)/2,
+      (a._1._3 + a._2._3)/2)  
+  }
+
   def main(args: Array[String]): Unit = {
     val image = ImageIO.read(new File("./images/girl.png"))
 
-    val focusedGrid = imageToFocusedGrid(image)
+    val originalImage = imageToFocusedGrid(image)
 
-    val processed = focusedGrid.coflatMap(boxFilter(9)).coflatMap(mirrorHorizontal)
-
+    // Use a box filter to blur then mirror by doing two coflatmaps in sequence
+    val processed = originalImage.coflatMap(boxFilter(9)).coflatMap(mirrorHorizontal)
     val processedImage = focusedGridToImage(processed)
+    ImageIO.write(processedImage, "png", new File("./images/mirrorandblur.png"))
 
-    ImageIO.write(processedImage, "png", new File("./images/processedgirl.png"))
+    // Blend the mirror and identity functions together
+    val composedProcess = originalImage.coflatMap(fg => compose(fg, mirrorHorizontal, identity[FocusedGrid, (Int, Int, Int)])(blend))
+    val processedComposedImage = focusedGridToImage(composedProcess)
+    ImageIO.write(processedComposedImage, "png", new File("./images/mirrorandidentity.png"))
+
+    // Same as previous but encode as a Cokleisli
+    val ck1 = Cokleisli(identity[FocusedGrid, (Int, Int, Int)])
+    val ck2 = Cokleisli(mirrorHorizontal)
+
+    val ck1ck2Compose = ck1.product(ck2).map(blendTuple)
+    val ck1ck2ComposedProcess = originalImage.coflatMap(ck1ck2Compose.run)
+    val ck1ck2ComposedProcessImage = focusedGridToImage(ck1ck2ComposedProcess)
+    
+    ImageIO.write(ck1ck2ComposedProcessImage, "png", new File("./images/ck1ck2mirrorandidentity.png"))
   }
 }
