@@ -81,7 +81,7 @@ object ImageProcessor {
   def identity(fg: FocusedGrid[(Int, Int, Int)]): (Int, Int, Int) = {
     fg.extract
   }
-  
+
   def compose[A,B,C,D](fg : FocusedGrid[A], f1 : FocusedGrid[A] => B, f2 : FocusedGrid[A] => C)(cf : (B,C) => D) : D = {
     val v1 = f1(fg)
     val v2 = f2(fg)
@@ -91,13 +91,13 @@ object ImageProcessor {
   def blend(a : (Int, Int, Int), b: (Int, Int, Int)) : (Int, Int, Int) = {
     ((a._1 + b._1)/2,
       (a._2 + b._2)/2,
-      (a._3 + b._3)/2)  
+      (a._3 + b._3)/2)
   }
 
   def blendTuple(a : ((Int, Int, Int), (Int, Int, Int))) : (Int, Int, Int) = {
     ((a._1._1 + a._2._1)/2,
       (a._1._2 + a._2._2)/2,
-      (a._1._3 + a._2._3)/2)  
+      (a._1._3 + a._2._3)/2)
   }
 
   def main(args: Array[String]): Unit = {
@@ -115,17 +115,19 @@ object ImageProcessor {
     val processedComposedImage = focusedGridToImage(composedProcess)
     ImageIO.write(processedComposedImage, "png", new File("./images/mirrorandidentity.png"))
 
-    // Same as previous but encode as a Cokleisli
+    // Use cokleisli to execute two transformations and then blend them with a map
     val ck1 = Cokleisli(mirrorVertical)
     val ck2 = Cokleisli(mirrorHorizontal)
 
-    val ck1ck2Compose = ck1.
-                          product(ck2).
-                          map(blendTuple)
+    val ck1ck2Compose : Cokleisli[FocusedGrid,(Int, Int, Int),
+                                  ((Int, Int, Int),(Int, Int, Int))]
+      = ck1.product(ck2)
 
-    val ck1ck2ComposedProcess = originalImage.coflatMap(ck1ck2Compose.run)
+    val ck1ck2Blend = ck1ck2Compose.map(blendTuple)
+
+    val ck1ck2ComposedProcess = originalImage.coflatMap(ck1ck2Blend.run)
     val ck1ck2ComposedProcessImage = focusedGridToImage(ck1ck2ComposedProcess)
-    
+
     ImageIO.write(ck1ck2ComposedProcessImage, "png", new File("./images/ck1ck2mirrorandidentity.png"))
   }
 }
