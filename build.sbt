@@ -5,14 +5,14 @@ lazy val comonad = (project in file(".")).
     name := "comonad",
     organization := "justinhj",
     version := "0.1-SNAPSHOT",
-    scalaVersion := "2.12.8"
+    scalaVersion := "2.13.1"
     // add other settings here
   )
 
 /* scala versions and options */
-scalaVersion := "2.12.8"
+scalaVersion := "2.13.1"
 
-addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.6")
+addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
 
 // These options will be used for *all* versions.
 scalacOptions ++= Seq(
@@ -22,7 +22,6 @@ scalacOptions ++= Seq(
   , "-Xlint"
   , "-Xverify"
   , "-feature"
-  ,"-Ypartial-unification"
   //,"-Xfatal-warnings"
   , "-language:_"
   //,"-optimise"
@@ -30,19 +29,22 @@ scalacOptions ++= Seq(
 
 javacOptions ++= Seq("-Xlint:unchecked", "-Xlint:deprecation", "-source", "1.7", "-target", "1.7")
 
-val CatsVersion = "2.0.0-M1"
+val CatsVersion = "2.1.1"
+val AmmoniteVersion = "2.0.0"
 
 libraryDependencies ++= Seq(
   // -- testing --
-  "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.14.3" % "test",
+  "com.github.alexarchambault" %% "scalacheck-shapeless_1.14" % "1.2.3" % "test",
+  "org.scalatest" %% "scalatest" % "3.1.1" % "test",
   // Cats
   "org.typelevel" %% "cats-core" % CatsVersion,
   "org.typelevel" %% "cats-laws" % CatsVersion,
+  "org.typelevel" %% "cats-testkit-scalatest" % "1.0.1",
   // type classes
-  "com.github.mpilquist" %% "simulacrum" % "0.12.0",
+  "com.github.mpilquist" %% "simulacrum" % "0.19.0",
   // li haoyi ammonite repl embed
-  "com.lihaoyi" % "ammonite" % "1.6.7" % "test" cross CrossVersion.full
+  "com.lihaoyi" % "ammonite" % AmmoniteVersion % "test" cross CrossVersion.full
 )
 
 resolvers ++= Seq(
