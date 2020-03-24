@@ -88,8 +88,11 @@ object ImageProcessor {
     cf(v1, v2)
   }
 
-  def blend(a: (Int, Int, Int), b: (Int, Int, Int)): (Int, Int, Int) =
+  def blend2(a: (Int, Int, Int))(b: (Int, Int, Int)): (Int, Int, Int) =
     ((a._1 + b._1) / 2, (a._2 + b._2) / 2, (a._3 + b._3) / 2)
+
+  // def blend(a: (Int, Int, Int), b: (Int, Int, Int)): (Int, Int, Int) =
+  //   ((a._1 + b._1) / 2, (a._2 + b._2) / 2, (a._3 + b._3) / 2)
 
   def blendTuple(a: ((Int, Int, Int), (Int, Int, Int))): (Int, Int, Int) =
     ((a._1._1 + a._2._1) / 2, (a._1._2 + a._2._2) / 2, (a._1._3 + a._2._3) / 2)
@@ -108,7 +111,7 @@ object ImageProcessor {
       ImageIO.write(processedImage, "png", new File("./images/mirrorandblur.png"))
 
       // Blend the mirror and identity functions together
-      val composedProcess = originalImage.coflatMap(fg => compose(fg, mirrorHorizontal, identity)(blend))
+      val composedProcess = originalImage.coflatMap(fg => compose(fg, mirrorHorizontal, identity)((a,b) => blend2(a)(b)))
       val processedComposedImage = focusedGridToImage(composedProcess)
       ImageIO.write(processedComposedImage, "png", new File("./images/mirrorandidentity.png"))
 
@@ -117,8 +120,7 @@ object ImageProcessor {
       val image1 = originalImage.coflatMap(mirrorHorizontal)
       val image2 = originalImage.coflatMap(mirrorVertical)
 
-      val ff = filledFocusGrid((a:(Int,Int,Int)) => (b:(Int,Int,Int)) => blend(a,b),
-        image1.grid(0).size, image1.grid.size)
+      val ff = filledFocusGrid(blend2 _, image1.grid(0).size, image1.grid.size)
 
       val appliedImageBlend = ff.ap(image1).ap(image2)
 
