@@ -53,16 +53,37 @@ object FocusedGrid {
 
     def pure[A](a: A): FocusedGrid[A] = FocusedGrid((0,0), Vector(Vector(a)))
 
-    // Ap is required for Applicative so we get map2, product and more
-    def ap[A, B](ff: FocusedGrid[A => B])(fa: FocusedGrid[A]): FocusedGrid[B] = {
-      val newGrid = ff.grid.mapWithIndex {
-        (row, i) =>
-          row.zip(fa.grid(i)).map {
-            case (f, a) =>
-              f(a)
+    override def map2[A, B, Z](fa: FocusedGrid[A], fb: FocusedGrid[B])(f: (A, B) => Z): FocusedGrid[Z] = {
+      val newGrid = fa.grid.zip(fb.grid).map {
+        case (rowA, rowB) =>
+          rowA.zip(rowB).map {
+            case (colA, colB) =>
+              f(colA,colB)
           }
       }
-      FocusedGrid(ff.focus, newGrid)
+      FocusedGrid(fa.focus, newGrid)
     }
+
+    // Ap is required for Applicative so we get map2, product and more
+    // Note that the implementation below is discarded because it is less efficient
+    // than the implementation of map2 above, in terms of intermediate work, and
+    // ap can be implemented in terms of map2 as shown ...
+    def ap[A, B](fab: FocusedGrid[A => B])(fa: FocusedGrid[A]): FocusedGrid[B] = {
+      map2(fab, fa){
+        (f,a) =>
+          f(a)
+      }
+    }
+
+    // def ap[A, B](ff: FocusedGrid[A => B])(fa: FocusedGrid[A]): FocusedGrid[B] = {
+    //   val newGrid = ff.grid.mapWithIndex {
+    //     (row, i) =>
+    //       row.zip(fa.grid(i)).map {
+    //         case (f, a) =>
+    //           f(a)
+    //       }
+    //   }
+    //   FocusedGrid(ff.focus, newGrid)
+    // }
   }
 }

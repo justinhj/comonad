@@ -91,15 +91,15 @@ object ImageProcessor {
   def blend2(a: (Int, Int, Int))(b: (Int, Int, Int)): (Int, Int, Int) =
     ((a._1 + b._1) / 2, (a._2 + b._2) / 2, (a._3 + b._3) / 2)
 
-  // def blend(a: (Int, Int, Int), b: (Int, Int, Int)): (Int, Int, Int) =
-  //   ((a._1 + b._1) / 2, (a._2 + b._2) / 2, (a._3 + b._3) / 2)
+  def blend(a: (Int, Int, Int), b: (Int, Int, Int)): (Int, Int, Int) =
+    ((a._1 + b._1) / 2, (a._2 + b._2) / 2, (a._3 + b._3) / 2)
 
   def blendTuple(a: ((Int, Int, Int), (Int, Int, Int))): (Int, Int, Int) =
     ((a._1._1 + a._2._1) / 2, (a._1._2 + a._2._2) / 2, (a._1._3 + a._2._3) / 2)
 
   def main(args: Array[String]): Unit = {
 
-    if (true) {
+    if(true) {
 
       val image = ImageIO.read(new File("./images/girl.png"))
 
@@ -120,9 +120,9 @@ object ImageProcessor {
       val image1 = originalImage.coflatMap(mirrorHorizontal)
       val image2 = originalImage.coflatMap(mirrorVertical)
 
-      val ff = filledFocusGrid(blend2 _, image1.grid(0).size, image1.grid.size)
-
-      val appliedImageBlend = ff.ap(image1).ap(image2)
+      //val ff = filledFocusGrid(blend2 _, image1.grid(0).size, image1.grid.size)
+      //val appliedImageBlend = ff.ap(image1).ap(image2)
+      val appliedImageBlend = Applicative[FocusedGrid].map2(image1, image2)(blend _)
 
       val appliedImageBlendImage = focusedGridToImage(appliedImageBlend)
 
@@ -143,20 +143,26 @@ object ImageProcessor {
 
     }
 
-    // Let's try this out
+    if(false) {
+      // Let's try this out
 
-    // val i1 = FocusedGrid[Int]((0, 0), Vector(Vector(1, 2)))
-    // val i2 = FocusedGrid[Int]((0, 0), Vector(Vector(10, 14)))
+      val i1 = FocusedGrid[Int]((0, 0), Vector(Vector(1, 2)))
+      val i2 = FocusedGrid[Int]((0, 0), Vector(Vector(10, 14)))
 
-    // println(show"i1 $i1 and i2 is $i2")
+      println(show"i1 $i1 and i2 is $i2")
 
-    // val fi1 = ((a: Int) => (b: Int) => (a + b))
+      val fi1 = ((a: Int) => (b: Int) => (a + b))
 
-    // val imageF = filledFocusGrid(fi1, 2, 1)
+      val imageF = filledFocusGrid(fi1, 2, 1)
 
-    // val fi1r = imageF.ap(i1).ap(i2)
+      val fi1r = imageF.ap(i1).ap(i2)
 
-    // println(show"fi1r $fi1r")
+      println(show"fi1r $fi1r")
+
+      val hello = Applicative[FocusedGrid].map2(i1, i2)(_ + _)
+      println(show"hello $hello")
+
+    }
 
   }
 }
