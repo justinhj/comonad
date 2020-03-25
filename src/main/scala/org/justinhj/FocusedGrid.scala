@@ -53,7 +53,28 @@ object FocusedGrid {
 
     def pure[A](a: A): FocusedGrid[A] = FocusedGrid((0,0), Vector(Vector(a)))
 
+    // This is an optimized map2 that avoids creating intermediate structures
+    // by using iterators
     override def map2[A, B, Z](fa: FocusedGrid[A], fb: FocusedGrid[B])(f: (A, B) => Z): FocusedGrid[Z] = {
+      val faRowIter = fa.grid.iterator
+      val fbRowIter = fb.grid.iterator
+      val rowBuilder = Vector.newBuilder[Vector[Z]]
+
+      while(faRowIter.hasNext && fbRowIter.hasNext) {
+        val faColIter = faRowIter.next.iterator
+        val fbColIter = fbRowIter.next.iterator
+        val colBuilder = Vector.newBuilder[Z]
+
+        while(faColIter.hasNext && fbColIter.hasNext) {
+          colBuilder.addOne(f(faColIter.next, fbColIter.next))
+        }
+        rowBuilder.addOne(colBuilder.result)
+      }
+      FocusedGrid(fa.focus, rowBuilder.result)
+    }
+
+    // This is a nicer but less performant map2
+    def map2Slow[A, B, Z](fa: FocusedGrid[A], fb: FocusedGrid[B])(f: (A, B) => Z): FocusedGrid[Z] = {
       val newGrid = fa.grid.zip(fb.grid).map {
         case (rowA, rowB) =>
           rowA.zip(rowB).map {
@@ -64,10 +85,8 @@ object FocusedGrid {
       FocusedGrid(fa.focus, newGrid)
     }
 
-    // Ap is required for Applicative so we get map2, product and more
-    // Note that the implementation below is discarded because it is less efficient
-    // than the implementation of map2 above, in terms of intermediate work, and
-    // ap can be implemented in terms of map2 as shown ...
+    // Note that we have an efficient implementation of map2 for this type class
+    // instance, so I use that to implement ap
     def ap[A, B](fab: FocusedGrid[A => B])(fa: FocusedGrid[A]): FocusedGrid[B] = {
       map2(fab, fa){
         (f,a) =>
@@ -75,15 +94,16 @@ object FocusedGrid {
       }
     }
 
-    // def ap[A, B](ff: FocusedGrid[A => B])(fa: FocusedGrid[A]): FocusedGrid[B] = {
-    //   val newGrid = ff.grid.mapWithIndex {
-    //     (row, i) =>
-    //       row.zip(fa.grid(i)).map {
-    //         case (f, a) =>
-    //           f(a)
-    //       }
-    //   }
-    //   FocusedGrid(ff.focus, newGrid)
-    // }
+    // You can write ap in terms of map alone ...
+    def apSlow[A, B](ff: FocusedGrid[A => B])(fa: FocusedGrid[A]): FocusedGrid[B] = {
+      val newGrid = ff.grid.mapWithIndex {
+        (row, i) =>
+          row.zip(fa.grid(i)).map {
+            case (f, a) =>
+              f(a)
+          }
+      }
+      FocusedGrid(ff.focus, newGrid)
+    }
   }
 }
