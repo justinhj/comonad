@@ -24,16 +24,14 @@ This project was created by https://github.com/justinhj/fp-starter-pack.g8
 
 ## Benchmarks
 
-[info] Result "benchmarks.FocusedGridBench.withSlowApSmall":
-[info]   119.935 ±(99.9%) 7.673 us/op [Average]
-[info]   (min, avg, max) = (116.598, 119.935, 121.628), stdev = 1.993
-[info]   CI (99.9%): [112.262, 127.608] (assumes normal distribution)
-[info] # Run complete. Total time: 00:06:47
-[info] REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
-[info] why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
-[info] experiments, perform baseline and negative tests that provide experimental control, make sure
-[info] the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
-[info] Do not assume the numbers tell you what you want them to tell.
+There are performed on a 2017 Macbook Pro under non-ideal conditions (bunch of Apps running)
+
+CPU 2.5 GHz Dual-Core Intel Core i7
+RAM 16 GB 2133 MHz LPDDR3
+
+Initial benchmark
+
+```
 [info] Benchmark                         Mode  Cnt       Score        Error  Units
 [info] FocusedGridBench.withMap2Large    avgt    5  120145.615 ±  14792.890  us/op
 [info] FocusedGridBench.withMap2Small    avgt    5      52.240 ±      3.186  us/op
@@ -51,4 +49,6 @@ Implemented and benchmarked array version
 [info] FocusedGridBench.withSlowApLarge     avgt    5  649442.291 ± 215248.298  us/op
 [info] FocusedGridBench.withSlowApSmall     avgt    5     141.025 ±     78.928  us/op
 
-
+Notable that optimized map2 is 4x faster on the large image than slowAp and
+the array version is actually slower than the vector version.
+```
