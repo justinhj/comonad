@@ -1,13 +1,18 @@
-package justinhj
+package org.justinhj
 
-import org.scalatest.FlatSpec
+// import org.scalatest.flatspec.AnyFlatSpec
 
-class Test1 extends FlatSpec {
+// import cats.syntax.applicative._
+// import cats.instances.map._
+import org.scalacheck.ScalacheckShapeless._
+import cats.tests.CatsSuite
+import cats.laws.discipline.ApplicativeTests
+import org.scalacheck.Arbitrary
+import cats.Eq
+import FocusedGrid._
 
-  "Test1" should "example test should pass" in {
+class FocusedGridLawTestsCats extends CatsSuite {
+  implicit def eqFocusedGrid[A: FocusedGrid]: Eq[FocusedGrid[A]] = Eq.fromUniversalEquals
 
-    assert(1+1 == 2)
-
-  }
-
+  //checkAll("FocusedGrid.ApplicativeLaws", ApplicativeTests[FocusedGrid].applicative[Int,Int,Int])
 }

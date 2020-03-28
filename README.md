@@ -41,6 +41,14 @@ This project was created by https://github.com/justinhj/fp-starter-pack.g8
 [info] FocusedGridBench.withSlowApSmall  avgt    5     119.935 ±      7.673  us/op
 [success] Total time: 410 s, completed 27-Mar-2020 8:10:42 PM
 
+Implemented and benchmarked array version
 
+[info] Benchmark                            Mode  Cnt       Score        Error  Units
+[info] FocusedGridArrayBench.withMap2Large  avgt    5  171099.587 ±  65471.687  us/op
+[info] FocusedGridArrayBench.withMap2Small  avgt    5      54.418 ±     25.669  us/op
+[info] FocusedGridBench.withMap2Large       avgt    5  152831.655 ±  40709.521  us/op
+[info] FocusedGridBench.withMap2Small       avgt    5      59.168 ±     15.346  us/op
+[info] FocusedGridBench.withSlowApLarge     avgt    5  649442.291 ± 215248.298  us/op
+[info] FocusedGridBench.withSlowApSmall     avgt    5     141.025 ±     78.928  us/op
 
 
