@@ -118,7 +118,6 @@ object ImageProcessor {
       ImageIO.write(processedComposedImage, "png", new File("./images/mirrorandidentity.png"))
 
       // Execute two independent transformations then blend them with applicative
-
       val image1 = originalImage.coflatMap(mirrorHorizontal)
       val image2 = originalImage.coflatMap(mirrorVertical)
 

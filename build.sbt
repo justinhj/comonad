@@ -14,6 +14,9 @@ scalaVersion := "2.13.1"
 
 addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
 
+enablePlugins(JmhPlugin)
+// jmh:run -t 1 -f 1 -wi 5 -i 5 .*Bench.*
+
 // These options will be used for *all* versions.
 scalacOptions ++= Seq(
   "-deprecation"
