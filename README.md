@@ -2,7 +2,7 @@
 
 Some examples of Comonad usage in programs
 
-See this blog post for the full details: [http://http://justinhj.github.io/2019/06/19/comonads-for-life.html](http://http://justinhj.github.io/2019/06/19/comonads-for-life.html)
+See this blog post for the full details: [https://justinhj.github.io/2019/06/20/comonads-for-life.html](https://justinhj.github.io/2019/06/20/comonads-for-life.html)
 
 # Image Processor
 
